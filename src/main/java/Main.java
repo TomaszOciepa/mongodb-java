@@ -1,9 +1,15 @@
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.util.Arrays;
+
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
 
 public class Main {
 
@@ -14,8 +20,37 @@ public class Main {
         MongoCollection mongoCollection = mongoDatabase.getCollection("cars"); //collection - tabela
 
 //        save(mongoCollection);
-        read(mongoCollection);
-        readByParam(mongoCollection, "Mark", "SUBARU");
+//        read(mongoCollection);
+//        readByParam(mongoCollection, "Mark", "SUBARU");
+//        readByParamAllElement(mongoCollection, "Mark", "BMW");
+//        delete(mongoCollection, "Mark", "BMW");
+        update(mongoCollection, "Mark", "SUBARU", "Model", "Impreza");
+    }
+
+    private static void delete(MongoCollection mongoCollection, String param, String value) {
+        Document document = new Document();
+        document.put(param, value);
+//        mongoCollection.deleteOne(document);
+        mongoCollection.deleteMany(document);
+    }
+
+    private static void update(MongoCollection mongoCollection, String param, String value, String newParam, String newValue) {
+        Bson eq = Filters.eq(param, value);
+        Bson query = combine(set(newParam, newValue), set("Power-engine", "360KM"));
+        mongoCollection.updateOne(eq, query);
+    }
+
+
+    private static void readByParamAllElement(MongoCollection mongoCollection, String param, String value) {
+        Document document = new Document();
+        document.put(param, value);
+        MongoCursor iterator = mongoCollection.find(document).iterator();
+
+        while (iterator.hasNext()) {
+            Document next = (Document) iterator.next();
+            System.out.println(next.toJson());
+        }
+
     }
 
     private static void readByParam(MongoCollection mongoCollection, String param, Object value) {
